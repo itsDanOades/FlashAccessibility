@@ -1,0 +1,186 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"> 
+    <!-- 
+    Smart developers always View Source. 
+    
+    This application was built using Adobe Flex, an open source framework
+    for building rich Internet applications that get delivered via the
+    Flash Player or to desktops via Adobe AIR. 
+    
+    Learn more about Flex at http://flex.org 
+    // -->
+    <head>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <style type="text/css" media="screen"> 
+            html, body  { height:100%; }
+            body { margin:0; padding:0; overflow:auto; text-align:center; 
+                   background-color: #ffffff; }   
+            object:focus { outline:none; }
+            #flashContent { display:none; }
+        </style>
+        
+        <script type="text/javascript" src="swfobject.js"></script>
+        <script type="text/javascript" src="jquery-2.1.1.min.js"></script>
+        
+        <script type="text/javascript">
+        
+        	window.loadPlayer = function() {
+        	
+        		//Store a reference to the Flash movie
+				var flashMovieInstance;        	
+        		var onSwfLoad = function(obj) {
+        			if (obj && obj.success && obj.ref) {
+                    	flashMovieInstance = obj.ref;
+                	}
+        		};
+        		
+        		//Embed swf and params
+        		var swfVersionStr = "14.0.0";
+	            var flashvars = {};
+	            
+	            var params = {};
+	            params.quality = "high";
+	            params.bgcolor = "#ffffff";
+	            params.allowFullScreen = 'true';
+            	params.allowScriptAccess = 'always';
+	            
+	            var attributes = {};
+	            attributes.id = "FlashAccessibility";
+	            attributes.name = "FlashAccessibility";
+	            attributes.align = "middle";
+	            
+	            swfobject.embedSWF(
+	                "FlashAccessibility.swf", "flashContent", 
+	                "1280", 
+	                "200", 
+	                swfVersionStr, 
+	                '',
+	                flashvars, 
+	                params, 
+	                attributes,
+	                onSwfLoad
+	            );
+
+	            swfobject.createCSS("#flashContent", "display:block;text-align:left;");
+	            
+	            //Add focus listener to beforeFlash to manually override tab controls when using tabs through page
+	            var beforeFlash = $('#beforeFlash');
+				beforeFlash.keydown(function (event) {
+				            //Override tab controls to manually pass focus to Flash
+				            var keyCode = event.keyCode || event.which;
+				
+				            //If we are tabbing forward
+				            if (keyCode === 9 && !event.shiftKey) {
+				                if (event.preventDefault) {
+				                    event.preventDefault();
+				                }
+				                event.returnValue = false;
+				                setTimeout(function () {
+				                        beforeFlash.blur();
+				                        
+				                        //Call focusOnFirst, a method exposed by our Flash movie ExternalInterface
+				                        flashMovieInstance.tabIndex = 0;
+				                        flashMovieInstance.focus();
+				                        
+				                        setTimeout(function () {
+						                        flashMovieInstance.focusOnFirst();
+						                }, 100); //Add delay to allow focus to pass to swf first
+				                        
+				                }, 200); //Add delay to prevent flash from receiving the tab key event
+				            }
+				        });
+				
+				//Add focus listener to afterFlash to manually override tab controls when tabbing backwards through page
+	            var afterFlash = $('#afterFlash');        
+				afterFlash.keydown(function (event) {
+		             var keyCode = event.keyCode || event.which;
+		             if (keyCode === 9 && event.shiftKey) {
+		                 if (event.preventDefault) {
+		                     event.preventDefault();
+		                 }
+		                 event.returnValue = false;
+		                 setTimeout(function () {
+		                 		afterFlash.blur();
+		                 		
+	                            //If tabbing backwards, go back to the last tab index of media player
+	                            flashMovieInstance.tabIndex = 0;
+		                        flashMovieInstance.focus();
+	                            
+	                            setTimeout(function () {
+				                        flashMovieInstance.focusOnLast();
+				                }, 100); //Add delay to allow focus to pass to swf first
+	                            
+		                 }, 200); //Add delay to prevent flash from receiving the same key event
+		             }
+		        });
+		        
+		        window.focusBeforeFlash = function() {
+		        	setTimeout(function() { $('#beforeFlashLink').focus(); }, 200);
+		        };
+		        
+		        window.focusAfterFlash = function() {
+		        	setTimeout(function() { $('#afterFlashLink').focus(); }, 200);
+		        };
+		        
+		        window.focusOnFlash = function() {
+		        	setTimeout(function() { flashMovieInstance.tabIndex = 0;
+				                        	flashMovieInstance.focus(); 
+				                          }, 200);
+		        };
+		        
+		        window.sendScreenReaderAlert = function(message) {
+		        
+	                if (typeof message !== 'string') {
+	                    return false;
+	                }
+	
+					//Create an aria alert to send a message to the screen reader
+	                var formattedMessage = $("<div role='alert' style='width: 1px; position: absolute; left: -2500px; overflow: hidden;'><p>" + message + "</p></div>")
+	                            .appendTo($('body'));
+	
+	                //Workaround for IE10 issue, aria alerts are not
+	                //detected by dynamically added containers, hiding and
+	                //immediately showing forces the browser to detect the
+	                //alert
+	                formattedMessage.hide();
+	                formattedMessage.show();
+	
+	                 window.setTimeout(function () {
+	                    formattedMessage.remove();
+	                }, 2500);
+		        };
+        	}
+        </script>
+        
+    </head>
+    <body onload="loadPlayer()">
+    
+    	<h2>Flash Accessibility Demo</h2>
+    	<div style="text-align:left;">
+    		<span>
+    			This is a simple demo showing basic accessibility concepts for using Flash content with screen readers.</br>
+	    		To use run the screen reader of your choice or download a free one from NDVA <a href="http://www.nvaccess.org/download">http://www.nvaccess.org/download</a>. </br>
+	    		This demo works best in the latest Firefox or Internet Explorer 10 and above.</br></br>
+	    		
+	    		The demo consists of a simple Flash movie with three toggle buttons and a simple slider surrounded by two HTML links.</br>
+	    		Move between components using the TAB and SHIFT TAB keys,</br>
+	    		Activate the buttons and links by using the ENTER or SPACE keys,</br>
+	    		Use the ARROW keys to to control the slider,.</br>
+	    		With the screen reader active each component will be read aloud when focused or updated
+    		</span>
+    	</div></br>
+    
+    	<!-- Create HTML anchor before Flash to pass focus to -->
+		<div id="beforeFlash"><a id='beforeFlashLink' href="http://www.bbc.co.uk">HTML Anchor 1</a></div>
+
+		<!-- Container for Flash content -->    	
+        <div id="flashContent"> </div>
+        
+        <!-- Create HTML anchor after Flash to pass focus to -->
+        <div id="afterFlash"><a id='afterFlashLink' href="http://www.bbc.co.uk">HTML Anchor 2</a></div>
+        
+   
+   </body>
+</html>
